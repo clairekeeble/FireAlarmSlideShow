@@ -3,241 +3,516 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fire Alarm Slide Show Questions</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Fire Alarm Systems Quiz</title>
     <style>
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
         }
-        .quiz-container {
+        .container {
             max-width: 800px;
-            width: 95%;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-        /* Hide the default radio button */
-        .option-label input[type="radio"] {
-            display: none;
+        h1 {
+            text-align: center;
+            color: #0056b3;
+            margin-bottom: 30px;
         }
-        .option-label {
-            transition: background-color 0.2s, border-color 0.2s;
+        .question-block {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
         }
-        /* Style the label when its radio button is checked */
-        .option-label:has(input[type="radio"]:checked) {
-            background-color: #eef2ff; /* indigo-50 */
-            border-color: #6366f1; /* indigo-500 */
+        .question-block:last-child {
+            border-bottom: none;
+        }
+        .question {
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            line-height: 1.5;
+        }
+        .options label {
+            display: block;
+            margin-bottom: 10px;
+            cursor: pointer;
+            padding: 8px 0;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        .options label:hover {
+            background-color: #e9e9e9;
+        }
+        .options input[type="radio"] {
+            margin-right: 10px;
+        }
+        .feedback {
+            margin-top: 10px;
+            font-weight: bold;
+            display: none; /* Hidden by default */
         }
         .correct {
-            background-color: #dcfce7 !important; /* green-100 */
-            border-color: #22c55e !important; /* green-500 */
-            color: #15803d; /* green-700 */
+            color: green;
         }
         .incorrect {
-            background-color: #fee2e2 !important; /* red-100 */
-            border-color: #ef4444 !important; /* red-500 */
-            color: #b91c1c; /* red-700 */
+            color: red;
         }
-        .disabled {
-            pointer-events: none;
-            opacity: 0.8;
+        .results {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+        button {
+            display: block;
+            width: 150px;
+            padding: 10px 20px;
+            margin: 20px auto;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen py-10">
-
-    <div id="quiz-container" class="quiz-container bg-white p-6 sm:p-8 rounded-xl shadow-lg w-full">
-        
-        <div id="start-screen" class="text-center">
-            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-4">Fire Safety Systems Quiz</h1>
-            <p class="text-gray-600 mb-6">Test your knowledge about fire sprinklers and alarm systems. All questions will be displayed on one page. Click "Start Quiz" to begin.</p>
-            <button id="start-btn" class="w-full sm:w-auto bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition duration-300">Start Quiz</button>
-        </div>
-
-        <form id="quiz-form" class="hidden">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-4">Answer all the questions below:</h2>
-            <div id="all-questions-container" class="space-y-8">
-                <!-- Questions will be dynamically inserted here -->
+<body>
+    <div class="container">
+        <h1>Fire Alarm Systems Quiz</h1>
+        <div id="quiz-container">
             </div>
-            <div class="mt-8 text-center">
-                <button id="submit-btn" type="submit" class="w-full sm:w-auto bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 transition duration-300">Submit Answers</button>
-            </div>
-        </form>
-
-        <div id="result-container" class="hidden text-center">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Quiz Complete!</h2>
-            <p class="text-lg text-gray-600 mb-2">Your final score is:</p>
-            <p id="score" class="text-5xl font-bold text-blue-600 mb-6"></p>
-            <p class="text-gray-600 mb-6">Scroll down to review your answers. Correct answers are highlighted in green.</p>
-            <button id="restart-btn" class="w-full sm:w-auto bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition duration-300">Restart Quiz</button>
-        </div>
-
+        <button id="submit-quiz">Submit Quiz</button>
+        <div id="results" class="results"></div>
+        <button id="restart-quiz" style="display: none;">Restart Quiz</button>
     </div>
 
     <script>
-        const quizData = [
-            { question: "What activates a fire sprinkler head?", options: ["Smoke", "Heat", "Flames", "Manual switch"], correctAnswer: "Heat" },
-            { question: "Which part of the sprinkler head bursts or melts to release water?", options: ["Water valve", "Heat detector", "Glass bulb or fusible link", "Nozzle cap"], correctAnswer: "Glass bulb or fusible link" },
-            { question: "What type of sprinkler system is most commonly used in buildings?", options: ["Dry pipe system", "Deluge system", "Pre-action system", "Wet pipe system"], correctAnswer: "Wet pipe system" },
-            { question: "In a dry pipe system, what fills the pipes before sprinkler activation?", options: ["Water", "Foam", "Air under pressure", "Steam"], correctAnswer: "Air under pressure" },
-            { question: "Which sprinkler system uses open sprinkler heads and floods the area when activated?", options: ["Wet pipe", "Dry pipe", "Deluge", "Pre-action"], correctAnswer: "Deluge" },
-            { question: "What typically triggers the fire alarm system in a sprinkler installation?", options: ["Heat sensor in ceiling", "Manual pull station", "Sprinkler water flow", "Smoke from the fire"], correctAnswer: "Sprinkler water flow" },
-            { question: "What is the main function of a sprinkler system?", options: ["Notify firefighters", "Suppress or extinguish fires", "Evacuate people", "Detect smoke"], correctAnswer: "Suppress or extinguish fires" },
-            { question: "In a pre-action system, what condition must be met before water is released?", options: ["Sprinkler activation only", "Manual switch activation", "Detection by fire alarm system and sprinkler activation", "Smoke detection alone"], correctAnswer: "Detection by fire alarm system and sprinkler activation" },
-            { question: "Which of the following is NOT a component of a sprinkler system?", options: ["Sprinkler head", "Fire hose reel", "Water supply", "Control valve"], correctAnswer: "Fire hose reel" },
-            { question: "Which type of sprinkler head is installed hanging from the ceiling and sprays water downward in a circular pattern?", options: ["Upright", "Pendant", "Sidewall", "Concealed"], correctAnswer: "Pendant" },
-            { question: "Which sprinkler head is ideal for warehouses and areas with exposed ceilings?", options: ["Pendant", "Sidewall", "Upright", "Concealed"], correctAnswer: "Upright" },
-            { question: "Which type of sprinkler head is mounted on walls and sprays in a crescent or half circle pattern?", options: ["Sidewall", "Pendant", "Concealed", "Upright"], correctAnswer: "Sidewall" },
-            { question: "What type of sprinkler head is best suited for buildings with aesthetic requirements and finished ceilings?", options: ["Upright", "Concealed", "Sidewall", "Pendant"], correctAnswer: "Concealed" },
-            { question: "In which type of sprinkler head does the water spray upward and then reflect downward off a deflector?", options: ["Sidewall", "Pendant", "Concealed", "Upright"], correctAnswer: "Upright" },
-            { question: "Where are sidewall sprinkler heads most commonly used?", options: ["Open factories", "Decorative ceilings", "Hotel rooms and hallways", "Cold storage units"], correctAnswer: "Hotel rooms and hallways" },
-            { question: "In voice evacuation systems, which output device is used instead of a horn?", options: ["Buzzer", "Speaker", "Strobe", "Siren"], correctAnswer: "Speaker" },
-            { question: "Which component is responsible for controlling the signaling devices in a fire alarm system?", options: ["The smoke detectors", "The Fire Alarm Control Panel (FACP) and its software program", "The building's electrical panel", "The emergency lighting system"], correctAnswer: "The Fire Alarm Control Panel (FACP) and its software program" },
-            { question: "What is the primary function of a signaling circuit in a fire alarm system?", options: ["Detect fire", "Power the control panel", "Alert occupants using audible and/or visual devices", "Monitor battery status"], correctAnswer: "Alert occupants using audible and/or visual devices" },
-            { question: "Which of the following devices is typically connected to a Notification Appliance Circuit (NAC)?", options: ["Smoke detector", "Manual pull station", "Horn-strobe", "Fire relay module"], correctAnswer: "Horn-strobe" },
-            { question: "Which type of notification appliance produces a visual alert during a fire alarm?", options: ["Speaker", "Horn", "Strobe", "Relay"], correctAnswer: "Strobe" },
-            { question: "What is the standard flash rate for a fire alarm strobe light according to NFPA and ULC codes?", options: ["0.5 flashes per second", "1 flash per second", "2 flashes per second", "3 flashes per second"], correctAnswer: "1 flash per second" },
-            { question: "Which fire alarm system divides a building into zones but cannot identify individual devices?", options: ["Addressable", "Conventional", "Wireless", "Intelligent"], correctAnswer: "Conventional" },
-            { question: "What type of fire alarm system assigns a unique address to each device?", options: ["Conventional", "Addressable", "Wireless", "Manual"], correctAnswer: "Addressable" },
-            { question: "Which fire alarm system allows devices to make decisions based on sensor data?", options: ["Conventional", "Addressable", "Intelligent", "Wireless"], correctAnswer: "Intelligent" },
-            { question: "Which system is best suited for temporary installations or historic buildings?", options: ["Conventional", "Intelligent", "Wireless", "Addressable"], correctAnswer: "Wireless" },
-            { question: "What is a major limitation of a conventional fire alarm system?", options: ["Devices are too intelligent", "Requires more wiring as more zones are added", "Cannot pinpoint the exact location of a triggered device", "Doesn’t detect heat"], correctAnswer: "Cannot pinpoint the exact location of a triggered device" },
-            { question: "Which system uses loop wiring for better scalability and reliability?", options: ["Conventional", "Addressable", "Manual", "Analog"], correctAnswer: "Addressable" },
-            { question: "Intelligent fire alarm systems are an advanced version of which system?", options: ["Wireless", "Addressable", "Conventional", "Hybrid"], correctAnswer: "Addressable" },
-            { question: "Which system is least likely to produce false alarms due to advanced algorithms?", options: ["Conventional", "Addressable", "Intelligent", "Wireless"], correctAnswer: "Intelligent" },
-            { question: "In which system can you identify the exact location of a triggered detector?", options: ["Conventional", "Addressable", "Manual", "Sounder-based"], correctAnswer: "Addressable" },
-            { question: "Which fire alarm system typically requires batteries for all its devices?", options: ["Addressable", "Conventional", "Intelligent", "Wireless"], correctAnswer: "Wireless" },
-            { question: "Which system is most commonly used in small offices and shops due to cost?", options: ["Conventional", "Addressable", "Intelligent", "Wireless"], correctAnswer: "Conventional" },
-            { question: "What advantage does loop wiring provide in addressable systems?", options: ["Makes rewiring easier", "Allows communication in both directions if cut", "Increases power supply", "Reduces smoke detection"], correctAnswer: "Allows communication in both directions if cut" },
-            { question: "What type of system is best for a data center requiring very early smoke detection?", options: ["Conventional", "Intelligent", "Manual", "Zone-based"], correctAnswer: "Intelligent" },
-            { question: "Which type of fire alarm system typically uses radio frequency communication?", options: ["Addressable", "Conventional", "Wireless", "Intelligent"], correctAnswer: "Wireless" },
-            { question: "A key disadvantage of a wireless fire alarm system is:", options: ["Too much wiring required", "Poor device communication", "Battery maintenance required", "Not compatible with control panels"], correctAnswer: "Battery maintenance required" }
+        const quizQuestions = [
+            {
+                'question': "What is the main difference between Class A and Class B fire alarm wiring?",
+                'options': ["Class A uses wireless communication; Class B does not",
+                            "Class A wiring forms a loop; Class B wiring is a radial or spur",
+                            "Class B has better fault tolerance than Class A",
+                            "Class A wiring is only used for smoke detectors"],
+                'answer': "Class A wiring forms a loop; Class B wiring is a radial or spur"
+            },
+            {
+                'question': "In Class A wiring, what happens when a wire is broken in the loop?",
+                'options': ["The entire circuit fails",
+                            "Signals still reach all devices from the other direction",
+                            "Only the initiating devices stop working",
+                            "A fire is automatically detected"],
+                'answer': "Signals still reach all devices from the other direction"
+            },
+            {
+                'question': "Which of the following is true about Class B wiring?",
+                'options': ["It continues operation if one conductor is broken",
+                            "It is looped back to the fire alarm control panel",
+                            "Devices beyond a break lose communication",
+                            "It requires more cable than Class A"],
+                'answer': "Devices beyond a break lose communication"
+            },
+            {
+                'question': "Which wiring method is generally considered more fault-tolerant?",
+                'options': ["Class A", "Class B", "Class C", "None of the above"],
+                'answer': "Class A"
+            },
+            {
+                'question': "What is typically required in Class A wiring that is not required in Class B?",
+                'options': ["End-of-line resistor",
+                            "Return path to the fire alarm control panel",
+                            "Junction box",
+                            "AC power source"],
+                'answer': "Return path to the fire alarm control panel"
+            },
+            {
+                'question': "In a Class B circuit, where is the End-of-Line (EOL) resistor placed?",
+                'options': ["At the fire alarm control panel",
+                            "In the middle of the circuit",
+                            "At the last device on the circuit",
+                            "At each detector"],
+                'answer': "At the last device on the circuit"
+            },
+            {
+                'question': "What is the primary advantage of using Class B wiring?",
+                'options': ["Better redundancy",
+                            "Simple and cost-effective installation",
+                            "Higher data transmission speed",
+                            "It does not require supervision"],
+                'answer': "Simple and cost-effective installation"
+            },
+            {
+                'question': "In NFPA 72, how is Class A defined regarding fault detection?",
+                'options': ["No fault detection is required",
+                            "Faults must be ignored",
+                            "It must allow continued operation beyond a single open",
+                            "It must shut down upon detecting a short"],
+                'answer': "It must allow continued operation beyond a single open"
+            },
+            {
+                'question': "Which wiring method allows signal to re-route in the event of a single break?",
+                'options': ["Class B", "Class D", "Class A", "Class X"],
+                'answer': "Class A"
+            },
+            {
+                'question': "Why might an installer choose Class B wiring over Class A?",
+                'options': ["It supports multiple loops",
+                            "It is more reliable",
+                            "It requires less cable and is cheaper to install",
+                            "It allows communication after a fault"],
+                'answer': "It requires less cable and is cheaper to install"
+            },
+            {
+                'question': "What is the function of the diodes shown in the alarm signaling devices section of the diagram?",
+                'options': ["To suppress voltage spikes",
+                            "To limit the current to safe levels",
+                            "To allow current flow only during alarm condition",
+                            "To signal the control panel directly"],
+                'answer': "To allow current flow only during alarm condition"
+            },
+            {
+                'question': "In the Class A alarm condition, how does current reach all alarm signaling devices even if a conductor is broken?",
+                'options': ["Through a backup battery",
+                            "Through wireless communication",
+                            "Through the return loop path",
+                            "Through the end-of-line resistor"],
+                'answer': "Through the return loop path"
+            },
+            {
+                'question': "What will the control panel detect if a wire is cut (open circuit) in the IDC field wiring?",
+                'options': ["Alarm condition",
+                            "Normal condition",
+                            "Short circuit",
+                            "Trouble condition"],
+                'answer': "Trouble condition"
+            },
+            {
+                'question': "Which voltage reading suggests that there is no continuity to the end-of-line resistor?",
+                'options': ["Vz = Vs", "Vz = 0", "Vz = Vs/2", "Vz = -Vs"],
+                'answer': "Vz = 0"
+            },
+            {
+                'question': "Why does the voltage sense circuitry show Vs/2 at the zone test point during normal operation?",
+                'options': ["Because the alarm contacts are closed",
+                            "Due to the voltage drop across a diode",
+                            "Because current flows through the EOL resistor",
+                            "Because the battery is half-charged"],
+                'answer': "Because current flows through the EOL resistor"
+            },
+            {
+                'question': "What condition is indicated when Vz = 0 volts?",
+                'options': ["Alarm", "Trouble (open circuit or break)", "Supervisory", "Normal"],
+                'answer': "Trouble (open circuit or break)"
+            },
+            {
+                'question': "What is the primary purpose of polling in an addressable fire alarm system?",
+                'options': ["to send power to all devices simultaneously",
+                            "to actively query each addressable device one at a time to check its status",
+                            "to broadcast alarm signals to all devices at once",
+                            "to reset the system automatically"],
+                'answer': "to actively query each addressable device one at a time to check its status"
+            },
+            {
+                'question': "How does an addressable fire alarm system identify individual devices?",
+                'options': ["By their physical location",
+                            "By their unique addresses assigned to each device",
+                            "By the color of their wiring",
+                            "By their manufacturer’s serial number"],
+                'answer': "By their unique addresses assigned to each device"
+            },
+            {
+                'question': "What happens if a device fails to respond to a polling request from the FACP?",
+                'options': ["The system ignores the device and continues polling others",
+                            "The FACP generates a trouble signal",
+                            "The device is automatically reset",
+                            "The entire system shuts down"],
+                'answer': "The FACP generates a trouble signal"
+            },
+            {
+                'question': "In the polling method, how does the FACP determine if a device is in an alarm state?",
+                'options': ["By detecting a voltage drop across the loop",
+                            "By receiving a specific response from the device indicating \"Alarm\"",
+                            "By measuring the temperature of the device",
+                            "By listening for an audible alarm from the device"],
+                'answer': "By receiving a specific response from the device indicating \"Alarm\""
+            },
+            {
+                'question': "Which of the following is NOT a typical addressable device in a fire alarm system?",
+                'options': ["Smoke detector", "Manual pull station", "Heat detector", "Circuit breaker"],
+                'answer': "Circuit breaker"
+            },
+            {
+                'question': "What is the sequence of actions in the polling method?",
+                'options': ["FACP sends a status request → Device responds → FACP moves to the next address",
+                            "FACP broadcasts a reset command → All devices respond at once",
+                            "FACP waits for devices to report alarms randomly",
+                            "FACP sends power pulses to devices in no particular order"],
+                'answer': "FACP sends a status request → Device responds → FACP moves to the next address"
+            },
+            {
+                'question': "What type of fault would most likely cause a device to fail to respond to polling?",
+                'options': ["Open circuit or ground fault",
+                            "Overvoltage in the system",
+                            "Incorrect device color coding",
+                            "High ambient temperature"],
+                'answer': "Open circuit or ground fault"
+            },
+            {
+                'question': "How does the FACP differentiate between a normal status and an alarm status in polling?",
+                'options': ["By the time delay in the response",
+                            "By the specific message sent back by the device",
+                            "By the brightness of an LED on the device",
+                            "By the frequency of the response signal"],
+                'answer': "By the specific message sent back by the device"
+            },
+            {
+                'question': "Which communication method involves the FACP sequentially checking each device’s status?",
+                'options': ["Broadcast signaling", "Polling", "Multicast transmission", "Random access"],
+                'answer': "Polling"
+            },
+            {
+                'question': "What is displayed on the FACP when a device reports an alarm during polling?",
+                'options': ["\"System Normal\"", "\"Device Missing\"", "\"Device 02 Alarm\"", "\"Power Failure\""],
+                'answer': "\"Device 02 Alarm\""
+            },
+            {
+                'question': "What is the key characteristic of the update method in addressable fire alarm systems?",
+                'options': ["The FACP sequentially queries each device",
+                            "Devices must wait for a poll to report status changes",
+                            "Devices can spontaneously send information to the FACP",
+                            "Only smoke detectors can communicate with the FACP"],
+                'answer': "Devices can spontaneously send information to the FACP"
+            },
+            {
+                'question': "How does a smoke detector communicate in the update method when it detects smoke?",
+                'options': ["It waits for the next polling cycle",
+                            "It sends a signal immediately to the panel",
+                            "It activates a local alarm first",
+                            "It requires manual reset before reporting"],
+                'answer': "It sends a signal immediately to the panel"
+            },
+            {
+                'question': "What is the main advantage of the update method over polling?",
+                'options': ["Reduced power consumption",
+                            "Faster reporting of alarm conditions",
+                            "Simpler wiring requirements",
+                            "Lower system cost"],
+                'answer': "Faster reporting of alarm conditions"
+            },
+            {
+                'question': "In the update method, how does the FACP typically receive device status information?",
+                'options': ["Through scheduled polling intervals",
+                            "Via spontaneous updates from devices",
+                            "Only during system tests",
+                            "Through manual activation"],
+                'answer': "Via spontaneous updates from devices"
+            },
+            {
+                'question': "Who or what does the acronym AHJ refer to in fire alarm and building codes?",
+                'options': ["Architect of Housing and Jobs",
+                            "Authority Having Jurisdiction",
+                            "Automated Hazard Judgment",
+                            "Assistant Housing Judge"],
+                'answer': "Authority Having Jurisdiction"
+            },
+            {
+                'question': "What is a \"Contained Use Area\"?",
+                'options': ["An open space designed for public gatherings",
+                            "A space where occupants are kept under supervision and cannot leave on their own",
+                            "An area used to contain fire extinguishers",
+                            "A sealed room for gas containment"],
+                'answer': "A space where occupants are kept under supervision and cannot leave on their own"
+            },
+            {
+                'question': "A “Dwelling Unit” is best described as:",
+                'options': ["A room within a hospital",
+                            "A single room used for meetings",
+                            "A self-contained unit with living, cooking, sleeping, and sanitary facilities",
+                            "A temporary storage unit"],
+                'answer': "A self-contained unit with living, cooking, sleeping, and sanitary facilities"
+            },
+            {
+                'question': "What is the primary function of a Fire Detector?",
+                'options': ["To suppress a fire",
+                            "To detect one or more products of combustion and trigger an alarm",
+                            "To locate the fire’s origin",
+                            "To activate sprinklers directly"],
+                'answer': "To detect one or more products of combustion and trigger an alarm"
+            },
+            {
+                'question': "“Floor Area” refers to:",
+                'options': ["The total area including the basement",
+                            "The total square footage of a fire zone",
+                            "The space between exit doors",
+                            "The area of all stories of a building excluding exterior walls and shafts"],
+                'answer': "The area of all stories of a building excluding exterior walls and shafts"
+            },
+            {
+                'question': "What is a “Dumbwaiter”?",
+                'options': ["A small elevator used for transporting food, laundry, or supplies",
+                            "A hidden fire suppression device",
+                            "A building code for windowless rooms",
+                            "A maintenance panel in the fire alarm system"],
+                'answer': "A small elevator used for transporting food, laundry, or supplies"
+            },
+            {
+                'question': "“Major Occupancy” in a building refers to:",
+                'options': ["The first group of people to enter a building",
+                            "The largest room in a fire zone",
+                            "The main purpose for which a building or part of a building is used",
+                            "The occupancy with the highest ceiling"],
+                'answer': "The main purpose for which a building or part of a building is used"
+            },
+            {
+                'question': "What is a “Suite” according to building codes?",
+                'options': ["A luxury area in hotels only",
+                            "A room that includes a kitchen",
+                            "A group of rooms operated as a single unit with controlled access",
+                            "An individual office inside a shopping mall"],
+                'answer': "A group of rooms operated as a single unit with controlled access"
+            },
+            {
+                'question': "“Means of Egress” refers to:",
+                'options': ["Windows used for ventilation",
+                            "The mechanical ventilation system",
+                            "A continuous path of travel to a public way for exiting a building",
+                            "Fire hose cabinet location"],
+                'answer': "A continuous path of travel to a public way for exiting a building"
+            },
+            {
+                'question': "What is meant by “Primary Power” in a fire alarm system?",
+                'options': ["Emergency power from a diesel generator",
+                            "Battery power used during outages",
+                            "The main electrical power supply (usually from the utility grid)",
+                            "Solar panels feeding the alarm system"],
+                'answer': "The main electrical power supply (usually from the utility grid)"
+            },
+            {
+                'question': "“Standby (Backup) Power” is defined as:",
+                'options': ["Power for running ventilation fans",
+                            "Power provided to the HVAC only",
+                            "A power source that takes over if the primary power fails",
+                            "Power used to boost the speaker volume"],
+                'answer': "A power source that takes over if the primary power fails"
+            },
+            {
+                'question': "Which of the following would most likely fall under a \"Contained Use Area\"?",
+                'options': ["An underground parking garage",
+                            "A daycare facility",
+                            "A detention center or psychiatric unit",
+                            "A hotel lobby"],
+                'answer': "A detention center or psychiatric unit"
+            }
         ];
-        
-        // Corrected some answers from the original request for accuracy
-        const corrections = { 26: "Cannot pinpoint the exact location of a triggered device", 24: "Intelligent", 28: "Addressable", 29: "Intelligent", 30: "Addressable", 32: "Conventional", 35: "Intelligent" };
-        Object.keys(corrections).forEach(key => { const index = parseInt(key) - 1; if(quizData[index]) { quizData[index].correctAnswer = corrections[key]; } });
 
-        const startBtn = document.getElementById('start-btn');
-        const restartBtn = document.getElementById('restart-btn');
-        const submitBtn = document.getElementById('submit-btn');
-        const startScreen = document.getElementById('start-screen');
-        const quizForm = document.getElementById('quiz-form');
-        const questionsContainer = document.getElementById('all-questions-container');
-        const resultContainer = document.getElementById('result-container');
-        const scoreEl = document.getElementById('score');
+        const quizContainer = document.getElementById('quiz-container');
+        const submitButton = document.getElementById('submit-quiz');
+        const restartButton = document.getElementById('restart-quiz');
+        const resultsDiv = document.getElementById('results');
 
-        let shuffledQuestions;
+        let currentQuestions = [];
 
-        // Fisher-Yates shuffle algorithm
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [array[i], array[j]] = [array[j], array[i]];
             }
-            return array;
         }
 
-        function startQuiz() {
-            startScreen.classList.add('hidden');
-            resultContainer.classList.add('hidden');
-            quizForm.classList.remove('hidden');
-            // Ensure submit button is visible and results are hidden
-            submitBtn.classList.remove('hidden');
-            resultContainer.classList.add('hidden');
+        function buildQuiz() {
+            quizContainer.innerHTML = ''; // Clear previous questions
+            resultsDiv.innerHTML = ''; // Clear previous results
+            submitButton.style.display = 'block';
+            restartButton.style.display = 'none';
 
-            // Scroll to top
-            window.scrollTo(0, 0);
+            // Create a deep copy of the quizQuestions array to avoid modifying the original
+            currentQuestions = JSON.parse(JSON.stringify(quizQuestions));
+            shuffleArray(currentQuestions); // Scramble questions
 
-            shuffledQuestions = shuffleArray([...quizData]);
-            questionsContainer.innerHTML = ''; // Clear previous questions
-
-            shuffledQuestions.forEach((questionData, index) => {
+            currentQuestions.forEach((qData, index) => {
                 const questionBlock = document.createElement('div');
-                questionBlock.className = 'question-block';
-                questionBlock.dataset.questionIndex = index;
+                questionBlock.classList.add('question-block');
 
-                const questionTitle = document.createElement('h3');
-                questionTitle.className = 'text-lg font-semibold text-gray-800 mb-4';
-                questionTitle.textContent = `${index + 1}. ${questionData.question}`;
-                questionBlock.appendChild(questionTitle);
+                const questionElement = document.createElement('div');
+                questionElement.classList.add('question');
+                questionElement.textContent = qData.question;
+                questionBlock.appendChild(questionElement);
 
-                const optionsContainer = document.createElement('div');
-                optionsContainer.className = 'options-container space-y-3';
+                const optionsDiv = document.createElement('div');
+                optionsDiv.classList.add('options');
+                shuffleArray(qData.options); // Scramble options for the current question
 
-                const shuffledOptions = shuffleArray([...questionData.options]);
-                shuffledOptions.forEach(option => {
-                    const optionId = `q${index}-option-${option.replace(/\s+/g, '-')}`;
-                    const optionLabel = document.createElement('label');
-                    optionLabel.className = 'option-label block p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50';
-                    optionLabel.setAttribute('for', optionId);
-
+                qData.options.forEach(option => {
+                    const label = document.createElement('label');
                     const radioInput = document.createElement('input');
                     radioInput.type = 'radio';
-                    radioInput.name = `question-${index}`;
+                    radioInput.name = `question${index}`;
                     radioInput.value = option;
-                    radioInput.id = optionId;
-                    
-                    const optionText = document.createElement('span');
-                    optionText.textContent = ` ${option}`;
-                    
-                    optionLabel.appendChild(radioInput);
-                    optionLabel.appendChild(optionText);
-                    optionsContainer.appendChild(optionLabel);
+                    label.appendChild(radioInput);
+                    label.appendChild(document.createTextNode(option));
+                    optionsDiv.appendChild(label);
                 });
+                questionBlock.appendChild(optionsDiv);
 
-                questionBlock.appendChild(optionsContainer);
-                questionsContainer.appendChild(questionBlock);
+                const feedbackDiv = document.createElement('div');
+                feedbackDiv.classList.add('feedback');
+                questionBlock.appendChild(feedbackDiv);
+
+                quizContainer.appendChild(questionBlock);
             });
         }
 
-        function handleSubmit(e) {
-            e.preventDefault(); // Prevent form from reloading the page
+        function showResults() {
             let score = 0;
-            
-            const questionBlocks = document.querySelectorAll('.question-block');
-            questionBlocks.forEach(block => {
-                const questionIndex = parseInt(block.dataset.questionIndex);
-                const questionData = shuffledQuestions[questionIndex];
-                const correctAnswer = questionData.correctAnswer;
-                
-                const selectedOptionInput = block.querySelector(`input[name="question-${questionIndex}"]:checked`);
-                const allOptionLabels = block.querySelectorAll('.option-label');
+            currentQuestions.forEach((qData, index) => {
+                const selectedOption = document.querySelector(`input[name="question${index}"]:checked`);
+                const feedbackDiv = quizContainer.children[index].querySelector('.feedback');
+                feedbackDiv.style.display = 'block'; // Make feedback visible
 
-                allOptionLabels.forEach(label => {
-                    const input = label.querySelector('input');
-                    // Highlight the correct answer in green
-                    if (input.value === correctAnswer) {
-                        label.classList.add('correct');
+                if (selectedOption) {
+                    if (selectedOption.value.toLowerCase() === qData.answer.toLowerCase()) {
+                        score++;
+                        feedbackDiv.textContent = "Correct!";
+                        feedbackDiv.classList.add('correct');
+                        feedbackDiv.classList.remove('incorrect');
+                    } else {
+                        feedbackDiv.textContent = `Incorrect. The correct answer was: ${qData.answer}`;
+                        feedbackDiv.classList.add('incorrect');
+                        feedbackDiv.classList.remove('correct');
                     }
-                    // If an option was selected and it's incorrect, highlight it in red
-                    if (selectedOptionInput && selectedOptionInput.value === input.value && selectedOptionInput.value !== correctAnswer) {
-                        label.classList.add('incorrect');
-                    }
-                    // Disable all inputs after submission
-                    input.disabled = true;
-                });
-
-                if (selectedOptionInput && selectedOptionInput.value === correctAnswer) {
-                    score++;
+                } else {
+                    feedbackDiv.textContent = `You didn't answer. The correct answer was: ${qData.answer}`;
+                    feedbackDiv.classList.add('incorrect');
+                    feedbackDiv.classList.remove('correct');
                 }
+
+                // Disable all radio buttons after submission
+                const radios = quizContainer.children[index].querySelectorAll('input[type="radio"]');
+                radios.forEach(radio => radio.disabled = true);
             });
 
-            // Show results
-            resultContainer.classList.remove('hidden');
-            scoreEl.textContent = `${score} / ${shuffledQuestions.length}`;
-            submitBtn.classList.add('hidden');
-
-            // Scroll to the results
-            resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            resultsDiv.textContent = `You got ${score} out of ${currentQuestions.length} questions correct.`;
+            submitButton.style.display = 'none';
+            restartButton.style.display = 'block';
         }
 
-        startBtn.addEventListener('click', startQuiz);
-        quizForm.addEventListener('submit', handleSubmit);
-        restartBtn.addEventListener('click', () => {
-            startScreen.classList.remove('hidden');
-            quizForm.classList.add('hidden');
-            resultContainer.classList.add('hidden');
-        });
+        // Event Listeners
+        submitButton.addEventListener('click', showResults);
+        restartButton.addEventListener('click', buildQuiz);
 
+        // Initial quiz build when the page loads
+        document.addEventListener('DOMContentLoaded', buildQuiz);
     </script>
 </body>
 </html>
